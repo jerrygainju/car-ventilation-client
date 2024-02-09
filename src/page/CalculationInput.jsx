@@ -86,8 +86,10 @@ const CalculationTable = () => {
         const Ea = parseFloat(inputStaffEa)
         const Tz = parseFloat(inputVTypeTz)
         const Ta = parseFloat(inputVTypeTa)
+
         const resultAz = 0.85 * resultCz * Ez * Tz;
         const resultAa = 0.85 * resultCa * Ea * Ta;
+
         setCalculatedValueAz(resultAz.toFixed(2))
         setCalculatedValueAa(resultAa.toFixed(2))
     }
@@ -100,9 +102,9 @@ const CalculationTable = () => {
 
         const resutlBz = 2000 * Fz * Tz
         const resutlBa = 2000 * Fa * Ta
+
         setCalculatedValueBz(resutlBz.toFixed(2))
         setCalculatedValueBa(resutlBa.toFixed(2))
-
     }
 
     const calculateCValues = () => {
@@ -111,7 +113,6 @@ const CalculationTable = () => {
 
         const resultAz = 2.5 * Az
         const resultAa = 2.5 * Aa
-        console.log(resultAz, 'aaaa');
 
         setCalculatedValueC1z(resultAz.toFixed(2))
         setCalculatedValueC1a(resultAa.toFixed(2))
@@ -121,12 +122,10 @@ const CalculationTable = () => {
         <div>
             <div className="text-lg font-bold text-center pt-16">
                 RL & RAC Car Park Ventilation Calculation
-
             </div>
             <div className="text-sm font-bold text-center ">
                 Based On AS 1668.2 - 2012
             </div>
-
             <div className="content-center">
                 <table className="border border-collapse mt-4 text-sm w-8/12 mx-auto ">
                     <tr>
@@ -144,7 +143,6 @@ const CalculationTable = () => {
                                 placeholder="Enter Basement"
                                 className="w-32 py-2 bg-slate-50"
                             />
-
                         </th>
                         <th className="border px-10">
                             <input
@@ -243,7 +241,6 @@ const CalculationTable = () => {
                                 }}
                                 value={parkingOptions.find(option => option.value === inputValuePa)}
                                 onChange={(selectedOption) => setInputValuePa(selectedOption.value)} />
-
                         </td>
                     </tr>
                     <tr>
@@ -270,7 +267,6 @@ const CalculationTable = () => {
                                 className="w-full py-2 pl-6 bg-slate-50"
                             />
                         </td>
-
                     </tr>
                     <tr>
                         <td className="border p-2">
@@ -399,7 +395,6 @@ const CalculationTable = () => {
                                 value={factorOptions.find(option => option.value === inputFactorFz)}
                                 onChange={(selectedOption) => setInputFz(selectedOption.value)}
                             />
-
                         </td>
                         <td className="border">
                             <Select
@@ -416,7 +411,6 @@ const CalculationTable = () => {
                                 value={factorOptions.find(option => option.value === inputFactorFa)}
                                 onChange={(selectedOption) => setInputFa(selectedOption.value)}
                             />
-
                         </td>
                     </tr>
                     <tr>
@@ -459,9 +453,7 @@ const CalculationTable = () => {
                             (a) 0.85 x C x E x T
                         </td>
                         <td className="border border-l-0 pl-2">
-
                         </td>
-
                         <td className="border pl-16">{calculatedValueAz}</td>
                         <td className="border pl-16">{calculatedValueAa}</td>
                         <td className="border"><button onClick={calculateAValues} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue active:bg-blue-800">Calculate</button></td>
@@ -471,9 +463,7 @@ const CalculationTable = () => {
                             (b) 2000 x F x T
                         </td>
                         <td className="border border-l-0 pl-2">
-
                         </td>
-
                         <td className="border pl-16">{calculatedValueBz}</td>
                         <td className="border pl-16">{calculatedValueBa}</td>
                         <td className="border"><button onClick={calculateBValues} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue active:bg-blue-800">Calculate</button></td>
@@ -483,9 +473,7 @@ const CalculationTable = () => {
                             (c) 2.5 x A
                         </td>
                         <td className="pl-2">
-
                         </td>
-
                         <td className="border pl-16">{calculatedValueC1z}</td>
                         <td className="border pl-16">{calculatedValueC1a}</td>
                         <td className="border"><button onClick={calculateCValues} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue active:bg-blue-800">Calculate</button></td>
