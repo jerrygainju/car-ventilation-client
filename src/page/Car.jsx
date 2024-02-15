@@ -107,7 +107,6 @@ const Car = () => {
                 <img src={table1} height={600} width={600}/>
                 <img src={table2} height={600} width={600} />
             </div>
-
             <div ref={tableRef}>
                 <Calculation />
             </div>
