@@ -1,6 +1,14 @@
 import { useState } from "react";
 import Select from "react-select";
 
+const percentageOptions = () => {
+    const options = [];
+    for (let i = 75; i <= 90; i++) {
+        const percentage = i / 100;
+        options.push({ value: percentage.toString(), label: `${i}%` });
+    }
+    return options;
+};
 
 const generateParkingOptions = () => {
     return [
@@ -43,9 +51,6 @@ const CalculationTable = () => {
     const [greatestValueCol4, setGreatestValueCol4] = useState(null);
     const [greatestValueCol5, setGreatestValueCol5] = useState(null);
 
-    const [combinedValueA, setCombinedValueA] = useState(null);
-    const [combinedValueB, setCombinedValueB] = useState(null);
-    const [combinedValueC, setCombinedValueC] = useState(null);
     const [combinedGreatestValue, setCombinedGreatestValue] = useState(null);
 
 
@@ -73,6 +78,8 @@ const CalculationTable = () => {
     const [inputValuePc, setInputValuePc] = useState('');
     const [inputValuePd, setInputValuePd] = useState('');
 
+    const [percentValue, setpercentValue] = useState('');
+
     const [calculatedValue, setCalculatedValue] = useState('');
     const [calculatedValueCa, setCalculatedValueCa] = useState('');
     const [calculatedValueCb, setCalculatedValueCb] = useState('');
@@ -97,10 +104,13 @@ const CalculationTable = () => {
     const [calculatedValueC1c, setCalculatedValueC1c] = useState('');
     const [calculatedValueC1d, setCalculatedValueC1d] = useState('');
 
+    const [calculateAirSupply, setCalculateTotalAirSupply] = useState('');
+
     const parkingOptions = generateParkingOptions();
     const vehicleOptions = generateVehicleTypeFactor();
     const exposureOptions = generateStaffExposureOptions();
     const factorOptions = generateStaffUsageFactor();
+    const percentOptions = percentageOptions();
 
 
     const calculateValues = () => {
@@ -243,26 +253,26 @@ const CalculationTable = () => {
         setGreatestValueCol3(col3);
         setGreatestValueCol4(col4);
         setGreatestValueCol5(col5);
+
+        return { col1, col2, col3, col4, col5 }
     };
 
     const calculateCombinedGreatestValue = () => {
-        const { resultA1a, resultA1z, resultA1b, resultA1c, resultA1d } = calculateAValues();
-        const { resutlBa, resutlBz, resutlBb, resutlBc, resutlBd } = calculateBValues();
-        const { resultAa, resultAz, resultAb, resultAc, resultAd } = calculateCValues();
-
-        const sumForA = resultA1a + resultA1z + resultA1b + resultA1c + resultA1d
-        const sumForB = resutlBa + resutlBz + resutlBb + resutlBc + resutlBd
-        const sumForC = resultAa + resultAz + resultAb + resultAc + resultAd
-
-        const combinedGreastedVal = Math.max(sumForA, sumForB, sumForC)
-
-        setCombinedValueA(sumForA);
-        setCombinedValueB(sumForB);
-        setCombinedValueC(sumForC);
-        setCombinedGreatestValue(combinedGreastedVal)
-        console.log(combinedGreastedVal, 'greates value');
-        return combinedGreastedVal
+        const { col1, col2, col3, col4, col5 } = calculategreatesValue();
+        const columnsToSum = [col1, col2, col3, col4, col5];
+        const validColumns = columnsToSum.filter(column => column || column === 0);
+        const greatestValueSum = validColumns.reduce((sum, column) => sum + parseFloat(column), 0);
+        setCombinedGreatestValue(greatestValueSum);
+        return { greatestValueSum, validColumns }
     }
+
+    const calculateTotalAirSupply = () => {
+        const { greatestValueSum, validColumns } = calculateCombinedGreatestValue();
+        const Ex = parseFloat(percentValue.value);
+        const totalAirSupply = Ex * greatestValueSum;
+        setCalculateTotalAirSupply(totalAirSupply);
+    };
+
 
     return (
         <div>
@@ -273,7 +283,7 @@ const CalculationTable = () => {
                 Based On AS 1668.2 - 2012
             </div>
             <div className="content-center">
-                <table className="border border-collapse mt-4 text-sm mx-auto ">
+                <table className="border border-collapse mt-4 text-sm w-11/12 mx-auto ">
                     <tr>
                         <th className="border py-3">
                             Interpretation
@@ -281,7 +291,7 @@ const CalculationTable = () => {
                         <th className="border px-8">
                             Variable
                         </th>
-                        <th className="border px-10">
+                        <th className="border px-4">
                             <div>
                             </div>
                             <input
@@ -290,28 +300,28 @@ const CalculationTable = () => {
                                 className="w-32 py-2 bg-slate-50"
                             />
                         </th>
-                        <th className="border px-10">
+                        <th className="border px-4">
                             <input
                                 type="text"
                                 placeholder="Enter Basement"
                                 className="w-32 py-2 bg-slate-50"
                             />
                         </th>
-                        <th className="border px-10">
+                        <th className="border px-4">
                             <input
                                 type="text"
                                 placeholder="Enter Basement"
                                 className="w-32 py-2 bg-slate-50"
                             />
                         </th>
-                        <th className="border px-10">
+                        <th className="border px-4">
                             <input
                                 type="text"
                                 placeholder="Enter Basement"
                                 className="w-32 py-2 bg-slate-50"
                             />
                         </th>
-                        <th className="border px-10">
+                        <th className="border px-4">
                             <input
                                 type="text"
                                 placeholder="Enter Basement"
@@ -433,9 +443,9 @@ const CalculationTable = () => {
                                 styles={{
                                     control: (provided, state) => ({
                                         ...provided,
-                                        backgroundColor: ' rgb(248 250 252 / var(--tw-bg-opacity))',
+                                        backgroundColor: ' rgb(248 250 260 / var(--tw-bg-opacity))',
                                         borderColor: 'transparent',
-                                        alignContent: 'center'
+                                        alignContent: 'center',
                                     }),
                                 }}
                                 value={parkingOptions.find(option => option.label === inputValuePz)}
@@ -964,75 +974,91 @@ const CalculationTable = () => {
                         </td>
                     </tr>
                     <tr>
-                        <td className="border p-2">
-                            C     (Contaminant Generation Rate)
-                        </td>
+                        <td className="border p-2">C (Contaminant Generation Rate)</td>
                         <td className="border pl-2">
                             P × (100 × n1 + n1 × d1 + n2 × d2)
                         </td>
-                        <td className="border pl-16 text-gray-600"> {isNaN(parseFloat(calculatedValue)) ? "Result" : `${parseFloat(calculatedValue)} L/s`}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueCa !== '' ? `${calculatedValueCa} L/s` : "Result"}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueCb !== '' ? `${calculatedValueCb} L/s` : "Result"}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueCc !== '' ? `${calculatedValueCc} L/s` : "Result"}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueCd !== '' ? `${calculatedValueCd} L/s` : "Result"}</td>
+                        <td className="border pl-16 text-gray-600"> {isNaN(parseFloat(calculatedValue)) ? "Result" : `${parseFloat(calculatedValue).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueCa)) ? "Result" : `${parseFloat(calculatedValueCa).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueCb)) ? "Result" : `${parseFloat(calculatedValueCb).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueCc)) ? "Result" : `${parseFloat(calculatedValueCc).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueCd)) ? "Result" : `${parseFloat(calculatedValueCd).toFixed(2)} L/s`}</td>
                         <td className="border"><button onClick={calculateValues} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue active:bg-blue-800">Calculate</button></td>
                     </tr>
                     <tr>
-                        <td className=" border border-r-0 p-2">
-                            (a) 0.85 x C x E x T
-                        </td>
+                        <td className=" border border-r-0 p-2">(a) 0.85 x C x E x T</td>
                         <td className="border border-l-0 pl-2">
                         </td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueAz !== '' ? `${calculatedValueAz} L/s` : "Result"}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueAa !== '' ? `${calculatedValueAa} L/s` : "Result"}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueAb !== '' ? `${calculatedValueAb} L/s` : "Result"}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueAc !== '' ? `${calculatedValueAc} L/s` : "Result"}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueAd !== '' ? `${calculatedValueAd} L/s` : "Result"}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueAz)) ? "Result" : `${parseFloat(calculatedValueAz).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueAa)) ? "Result" : `${parseFloat(calculatedValueAa).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueAb)) ? "Result" : `${parseFloat(calculatedValueAb).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueAc)) ? "Result" : `${parseFloat(calculatedValueAc).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueAd)) ? "Result" : `${parseFloat(calculatedValueAd).toFixed(2)} L/s`}</td>
                         <td className="border"><button onClick={calculateAValues} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue active:bg-blue-800">Calculate</button></td>
                     </tr>
                     <tr>
-                        <td className="border border-r-0 p-2">
-                            (b) 2000 x F x T
-                        </td>
+                        <td className="border border-r-0 p-2">(b) 2000 x F x T</td>
                         <td className="border border-l-0 pl-2">
                         </td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueBz !== '' ? `${calculatedValueBz} L/s` : "Result"}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueBa !== '' ? `${calculatedValueBa} L/s` : "Result"}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueBb !== '' ? `${calculatedValueBb} L/s` : "Result"}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueBc !== '' ? `${calculatedValueBc} L/s` : "Result"}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueBd !== '' ? `${calculatedValueBd} L/s` : "Result"}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueBz)) ? "Result" : `${parseFloat(calculatedValueBz).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueBa)) ? "Result" : `${parseFloat(calculatedValueBa).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueBb)) ? "Result" : `${parseFloat(calculatedValueBb).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueBc)) ? "Result" : `${parseFloat(calculatedValueBc).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueBd)) ? "Result" : `${parseFloat(calculatedValueBd).toFixed(2)} L/s`}</td>
                         <td className="border"><button onClick={calculateBValues} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue active:bg-blue-800">Calculate</button></td>
                     </tr>
                     <tr>
-                        <td className="border border-r-0 p-2">
-                            (c) 2.5 x A
-                        </td>
+                        <td className="border border-r-0 p-2">(c) 2.5 x A</td>
                         <td className="pl-2">
                         </td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueC1z !== '' ? `${calculatedValueC1z} L/s` : "Result"}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueC1a !== '' ? `${calculatedValueC1a} L/s` : "Result"}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueC1b !== '' ? `${calculatedValueC1b} L/s` : "Result"}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueC1c !== '' ? `${calculatedValueC1c} L/s` : "Result"}</td>
-                        <td className="border pl-16 text-gray-600">{calculatedValueC1d !== '' ? `${calculatedValueC1d} L/s` : "Result"}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueC1z)) ? "Result" : `${parseFloat(calculatedValueC1z).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueC1a)) ? "Result" : `${parseFloat(calculatedValueC1a).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueC1b)) ? "Result" : `${parseFloat(calculatedValueC1b).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueC1c)) ? "Result" : `${parseFloat(calculatedValueC1c).toFixed(2)} L/s`}</td>
+                        <td className="border pl-16 text-gray-600">{isNaN(parseFloat(calculatedValueC1d)) ? "Result" : `${parseFloat(calculatedValueC1d).toFixed(2)} L/s`}</td>
                         <td className="border"><button onClick={calculateCValues} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue active:bg-blue-800">Calculate</button></td>
                     </tr>
                 </table>
             </div>
             <div className="flex gap-36">
                 <div className="pt-10">
-                    <button onClick={calculategreatesValue} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue active:bg-blue-800">Click to Show Greatest Value for each column</button>
-                    <p className="pt-2">Design should be based on  {greatestValueCol1 !== null ? `${greatestValueCol1.toFixed(2)} L/s for column 1` : "Result"}</p>
-                    <p>Design should be based on  {greatestValueCol2 !== null ? `${greatestValueCol2.toFixed(2)} L/s for column 2` : "Result"}</p>
-                    <p>Design should be based on  {greatestValueCol3 !== null ? `${greatestValueCol3.toFixed(2)} L/s for column 3` : "Result"}</p>
-                    <p>Design should be based on  {greatestValueCol4 !== null ? `${greatestValueCol4.toFixed(2)} L/s for column 4` : "Result"}</p>
-                    <p>Design should be based on  {greatestValueCol5 !== null ? `${greatestValueCol5.toFixed(2)} L/s for column 5` : "Result"}</p>
+                    <button onClick={calculategreatesValue} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue active:bg-blue-800">Click to Show Greatest Value</button>
+                    <p className="pt-2">Design should be based on  {isNaN(parseFloat(greatestValueCol1)) ? "Result" : `${parseFloat(greatestValueCol1).toFixed(2)} L/s for column 1`}</p>
+                    <p>Design should be based on  {isNaN(parseFloat(greatestValueCol2)) ? "Result" : `${parseFloat(greatestValueCol2).toFixed(2)} L/s for column 2`}</p>
+                    <p>Design should be based on  {isNaN(parseFloat(greatestValueCol3)) ? "Result" : `${parseFloat(greatestValueCol3).toFixed(2)} L/s for column 3`}</p>
+                    <p>Design should be based on  {isNaN(parseFloat(greatestValueCol4)) ? "Result" : `${parseFloat(greatestValueCol4).toFixed(2)} L/s for column 4`}</p>
+                    <p>Design should be based on  {isNaN(parseFloat(greatestValueCol5)) ? "Result" : `${parseFloat(greatestValueCol5).toFixed(2)} L/s for column 5`}</p>
+
                 </div>
                 <div className="pt-10">
-                    <button onClick={calculateCombinedGreatestValue} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue active:bg-blue-800">Click to Show Combined Value for a b and c</button>
-                    <p className="pt-2">Combined value for a: {combinedValueA !== null ? `${combinedValueA.toFixed(2)} L/s` : "Result"}</p>
-                    <p>Combined value for b: {combinedValueB !== null ? `${combinedValueB.toFixed(2)} L/s` : "Result"}</p>
-                    <p>Combined value for c: {combinedValueC !== null ? `${combinedValueC.toFixed(2)} L/s` : "Result"}</p>
-                    <p className="pt-4">Greatest value among a b and c: {combinedGreatestValue !== null ? `${combinedGreatestValue.toFixed(2)} L/s` : "Result"}</p>
+                    <button onClick={calculateCombinedGreatestValue} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue active:bg-blue-800">Calculate Total Air Exhaust</button>
+                    <p className="pt-4">Total Air Exhaust : {isNaN(parseFloat(combinedGreatestValue)) ? "Result" : `${parseFloat(combinedGreatestValue).toFixed(2)} L/s`}</p>
+                </div>
+                <div className="pt-10">
+                    <button onClick={calculateTotalAirSupply} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue active:bg-blue-800">Calculate Total Air Supply </button>
+                    <div className="pt-4">
+                        <Select
+                            options={percentOptions}
+                            placeholder="Enter the percentage"
+                            styles={{
+                                control: (provided, state) => ({
+                                    ...provided,
+                                    backgroundColor: ' rgb(248 250 260 / var(--tw-bg-opacity))',
+                                    alignContent: 'center',
+                                }),
+                            }}
+                            value={percentOptions.find(option => option.label === percentValue)}
+                            onChange={(selectedOption) => setpercentValue(selectedOption)}
+                            formatOptionLabel={(option, { context }) => (
+                                <div>
+                                    {context === 'menu' ? option.label : option.label}
+                                </div>
+                            )}
+                        />
+                    </div>
+                    <p className="pt-4">
+                        Total Air Supply : {isNaN(parseFloat(calculateAirSupply)) ? 'Result' : `${parseFloat(calculateAirSupply).toFixed(2)} L/s`}
+                    </p>
                 </div>
             </div>
         </div>
